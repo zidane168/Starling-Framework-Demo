@@ -6,7 +6,7 @@
         <key>texturePackerVersion</key>
         <string>3.6.0</string>
         <key>fileName</key>
-        <string>C:/Users/vilh/Desktop/texture.tps</string>
+        <string>E:/Starling/Starling-Framework-Demo/HungryHero/texture.tps</string>
         <key>autoSDSettings</key>
         <array>
             <struct type="AutoSDSettings">
@@ -28,7 +28,7 @@
             </struct>
         </array>
         <key>allowRotation</key>
-        <true/>
+        <false/>
         <key>premultiplyAlpha</key>
         <false/>
         <key>shapeDebug</key>
@@ -38,7 +38,7 @@
         <key>dataFormat</key>
         <string>sparrow</string>
         <key>textureFileName</key>
-        <filename>mySpriteSheet.png</filename>
+        <filename>C:/Users/vilh/Desktop/mySpriteSheet.png</filename>
         <key>flipPVR</key>
         <false/>
         <key>pvrCompressionQuality</key>
@@ -145,7 +145,7 @@
             <key>data</key>
             <struct type="DataFile">
                 <key>name</key>
-                <filename>mySpriteSheet.xml</filename>
+                <filename>C:/Users/vilh/Desktop/mySpriteSheet.xml</filename>
             </struct>
         </map>
         <key>multiPack</key>
@@ -188,12 +188,13 @@
         </struct>
         <key>fileList</key>
         <array>
-            <filename>E:/Starling/Starling-Framework-Demo/HungryHero/media/graphics/hero</filename>
-            <filename>E:/Starling/Starling-Framework-Demo/HungryHero/media/graphics/item</filename>
-            <filename>E:/Starling/Starling-Framework-Demo/HungryHero/media/graphics/obstacle</filename>
-            <filename>E:/Starling/Starling-Framework-Demo/HungryHero/media/graphics/title</filename>
-            <filename>E:/Starling/Starling-Framework-Demo/HungryHero/media/graphics/screen</filename>
-            <filename>E:/Starling/Starling-Framework-Demo/HungryHero/media/graphics/button</filename>
+            <filename>media/graphics/hero</filename>
+            <filename>media/graphics/item</filename>
+            <filename>media/graphics/obstacle</filename>
+            <filename>media/graphics/title</filename>
+            <filename>media/graphics/screen</filename>
+            <filename>media/graphics/button</filename>
+            <filename>media/graphics/particles</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>

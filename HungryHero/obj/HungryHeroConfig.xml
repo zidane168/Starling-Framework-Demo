@@ -16,7 +16,7 @@
     </define>
     <define append="true">
       <name>CONFIG::timeStamp</name>
-      <value>'1/30/2015'</value>
+      <value>'2/21/2015'</value>
     </define>
     <define append="true">
       <name>CONFIG::air</name>
@@ -34,8 +34,8 @@
     <source-path append="true">
       <path-element>E:\Starling\Starling-Framework-Demo\HungryHero\src</path-element>
       <path-element>E:\Starling\Framework\Starling-Framework-v1.6-0\starling\src</path-element>
-      <path-element>E:\Starling\Framework\Starling-Framework-v1.6-0\starling\src</path-element>
-      <path-element>E:\Starling\Framework\GreenSock-AS3\GreenSock-AS3</path-element>
+      <path-element>E:\Starling\Framework\GreenSock-AS3</path-element>
+      <path-element>E:\Starling\Framework\Starling-Extension-Particle-System-master\src</path-element>
       <path-element>C:\Program Files (x86)\FlashDevelop\Library\AS3\classes</path-element>
     </source-path>
   </compiler>

@@ -4,6 +4,7 @@ package screens
 	import flash.geom.Rectangle;
 	import flash.geom.Vector3D;
 	import flash.utils.getTimer;
+	import starling.extensions.PDParticleSystem;
 	
 	import objects.Item;
 	import objects.GameBackground;
@@ -12,14 +13,16 @@ package screens
 	
 	import starling.display.Button;
 	import starling.display.Sprite;
-	import starling.events.Event;	
+	import starling.events.Event;
 	import starling.events.TouchEvent;
 	import starling.events.Touch;
-	import starling.text.TextField;	
-	import starling.utils.deg2rad;	
+	import starling.text.TextField;
+	import starling.utils.deg2rad;
 	import starling.utils.HAlign;
 	import starling.utils.VAlign;
 	
+	import starling.textures.Texture;
+	import starling.core.Starling;
 	
 	/**
 	 * ...
@@ -50,10 +53,13 @@ package screens
 		private var obstaclesToAnimate:Vector.<Obstacle>;
 		
 		private var itemToAnimate:Vector.<Item>;
+		private var eatParticlesToAnimate:Vector.<Particle>;
 		
 		private var touch:Touch;
 		private var touchX:Number;
 		private var touchY:Number;
+		
+		private var particle:PDParticleSystem;
 		
 		public function InGame()
 		{
@@ -74,7 +80,7 @@ package screens
 			scoreText.x = 20;
 			scoreText.y = 20;
 			scoreText.border = true;
-			scoreText.height = scoreText.textBounds.height + 10;	// vẽ khung bao quanh
+			scoreText.height = scoreText.textBounds.height + 10; // vẽ khung bao quanh
 			this.addChild(scoreText);
 		}
 		
@@ -84,19 +90,27 @@ package screens
 			bg = new GameBackground();
 			// bg.speed = 10;
 			this.addChild(bg);
+
+			// custome particle
+			particle = new PDParticleSystem(XML(new AssetsParticles.ParticlesXML()), Texture.fromBitmap(new AssetsParticles.ParticleTexture()));		
+			Starling.juggler.add(particle);
+			particle.x = -100;
+			particle.y = -100;
+			particle.scaleX = 1.2;
+			particle.scaleY = 1.2;
+			this.addChild(particle);
+			
 			
 			hero = new Hero();
 			hero.x = stage.stageWidth / 2;
-			hero.y = stage.stageHeight / 2;					
+			hero.y = stage.stageHeight / 2;
 			
 			this.addChild(hero);
-			
 			
 			startButton = new Button(Assets.getAtlas().getTexture("start"));
 			startButton.x = stage.stageWidth * 0.5 - startButton.width * 0.5
 			startButton.y = stage.stageHeight * 0.5 - startButton.height * 0.5;
 			this.addChild(startButton);
-			
 			
 			gameArea = new Rectangle(0, 100, stage.stageWidth, stage.stageHeight - 250);
 		
@@ -126,6 +140,7 @@ package screens
 			
 			obstaclesToAnimate = new Vector.<Obstacle>();
 			itemToAnimate = new Vector.<Item>();
+			eatParticlesToAnimate = new Vector.<Particle>();
 			
 			// khi người chơi nhấn Start, hero mới bay ra
 			startButton.addEventListener(Event.TRIGGERED, onStartButtonClicked);
@@ -136,16 +151,18 @@ package screens
 			startButton.removeEventListener(Event.TRIGGERED, onStartButtonClicked);
 			startButton.visible = false;
 			
-			laucherHero();
+			lauchHero();
 		}
 		
-		private function laucherHero():void
+		private function lauchHero():void
 		{
+			// kích hoạt particle -> phải có mới active hiệu ứng
+			particle.start();
 			this.addEventListener(TouchEvent.TOUCH, onTouch);
 			this.addEventListener(Event.ENTER_FRAME, onGameTick);
 		}
 		
-		private function onTouch(e:TouchEvent):void 
+		private function onTouch(e:TouchEvent):void
 		{
 			touch = e.getTouch(stage);
 			
@@ -155,6 +172,9 @@ package screens
 		
 		private function onGameTick(e:Event):void
 		{
+			particle.x = hero.x + 60;			
+			particle.y = hero.y;
+			
 			switch (gameState)
 			{
 				case "idle": // trạng thái ban đầu, hero chưa vào màn hình screen
@@ -174,36 +194,35 @@ package screens
 					
 					break;
 				
-				case "flying": 
-					
+				case "flying":
 					
 					// check collision
 					if (hitObstacle <= 0)
 					{
-						hero.y -= (hero.y - touchY) * 0.1;	// nhân vật bay theo vị trí chuột
+						hero.y -= (hero.y - touchY) * 0.1; // nhân vật bay theo vị trí chuột
 						
-						if ( -(hero.y - touchY) < 150 && -(hero.y - touchY) > -150)
-							hero.rotation = deg2rad(-(hero.y - touchY) * 0.2);	// xoay nhân vật theo con chuột khi di chuyển chuột (nhân 0.2 để nó hơi nhích lên xíu thôi)
+						if (-(hero.y - touchY) < 150 && -(hero.y - touchY) > -150)
+							hero.rotation = deg2rad(-(hero.y - touchY) * 0.2); // xoay nhân vật theo con chuột khi di chuyển chuột (nhân 0.2 để nó hơi nhích lên xíu thôi)
 						
-						if (hero.y < gameArea.top + hero.height * 0.5)	// chặn trên
+						if (hero.y < gameArea.top + hero.height * 0.5) // chặn trên
 						{
 							hero.y = gameArea.top + hero.height * 0.5;
-							hero.rotation = deg2rad(0);	// quay ngang 
+							hero.rotation = deg2rad(0); // quay ngang 
 						}
-												
-						if (hero.y  > gameArea.bottom - hero.height * 0.5)	// chặn dưới
+						
+						if (hero.y > gameArea.bottom - hero.height * 0.5) // chặn dưới
 						{
 							hero.y = gameArea.bottom - hero.height * 0.5;
 							hero.rotation = deg2rad(0);
 						}
 					}
-					else	// hero va chạm vào vật thể lạ
+					else // hero va chạm vào vật thể lạ
 					{
 						hitObstacle--;
 						cameraShake();
-						// hero.rotation = deg2rad(60);
+							// hero.rotation = deg2rad(60);
 					}
-										
+					
 					playerSpeed -= (playerSpeed - MIN_SPEED) * 0.01;
 					bg.speed = playerSpeed * elapsed;
 					
@@ -215,6 +234,7 @@ package screens
 					
 					createFoodItems();
 					animateItems();
+					animateEatParticles();
 					
 					break;
 				
@@ -223,7 +243,38 @@ package screens
 			}
 		}
 		
-		private function animateItems():void 
+		private function animateEatParticles():void 
+		{
+			for (var i:uint = 0; i < eatParticlesToAnimate.length; i++)
+			{
+				var eatParticleToTrack:Particle = eatParticlesToAnimate[i];
+				
+				if (eatParticleToTrack)
+				{
+					eatParticleToTrack.scaleX -= 0.03;
+					eatParticleToTrack.scaleY = eatParticleToTrack.scaleX;
+					
+					eatParticleToTrack.y -= eatParticleToTrack.speedY;
+					eatParticleToTrack.speedY -= eatParticleToTrack.speedY * 0.2;
+					
+					eatParticleToTrack.x += eatParticleToTrack.speedX;
+					eatParticleToTrack.speedX --;
+					
+					eatParticleToTrack.rotation += deg2rad(eatParticleToTrack.spin);
+					eatParticleToTrack.spin *= 1.1;
+					
+					if (eatParticleToTrack.scaleY <= 0.02)
+					{
+						eatParticlesToAnimate.splice(i, 1);
+						this.removeChild(eatParticleToTrack);
+						eatParticleToTrack = null;						
+					}
+				}
+				
+			}
+		}
+		
+		private function animateItems():void
 		{
 			var itemToTrack:Item;
 			for (var i:uint = 0; i < itemToAnimate.length; i++)
@@ -234,10 +285,13 @@ package screens
 				// hero tương tac với item -> item sẽ biến mất
 				if (itemToTrack.bounds.intersects(hero.bounds))
 				{
+					// an item ra khoi
+					createEatParticles(itemToTrack);
+					
 					itemToAnimate.splice(i, 1);
 					this.removeChild(itemToTrack);
 				}
-
+				
 				// item đi ra khỏi màn hình bên trái -> remove item
 				if (itemToTrack.x < -50)
 				{
@@ -245,27 +299,50 @@ package screens
 					this.removeChild(itemToTrack);
 				}
 			}
-			
+		
 		}
 		
-		private function createFoodItems():void 
+		private function createEatParticles(itemToTrack:Item):void
 		{
-			if (Math.random() > 0.95)
+			var count:int = 5;
+			
+			while (count > 0)
 			{
-				var itemToTrack:Item = new Item(Math.ceil(Math.random() * 5) );	// 5 loại item
-				itemToTrack.x = stage.stageWidth + 50;
-				itemToTrack.y = int (Math.random() * (gameArea.bottom - gameArea.top)) + gameArea.top;	// random trong khoảng gameArea, ko thoát ra khoảng này
-				this.addChild(itemToTrack);
+				count--;
 				
-				itemToAnimate.push(itemToTrack);				
+				var eatPracticle:Particle = new Particle();
+				this.addChild(eatPracticle);
+				eatPracticle.x = itemToTrack.x + Math.random() * 40 - 20;
+				eatPracticle.y = itemToTrack.y - Math.random() * 40;
+				
+				eatPracticle.speedX = Math.random() * 2 + 1;
+				eatPracticle.speedY = Math.random() * 5;
+				eatPracticle.spin = Math.random() * 15;
+				
+				eatPracticle.scaleX = eatPracticle.scaleY = Math.random() * 0.3 + 0.3;
+				
+				eatParticlesToAnimate.push(eatPracticle);
 			}
 		}
 		
-		private function cameraShake():void 
+		private function createFoodItems():void
+		{
+			if (Math.random() > 0.95)
+			{
+				var itemToTrack:Item = new Item(Math.ceil(Math.random() * 5)); // 5 loại item
+				itemToTrack.x = stage.stageWidth + 50;
+				itemToTrack.y = int(Math.random() * (gameArea.bottom - gameArea.top)) + gameArea.top; // random trong khoảng gameArea, ko thoát ra khoảng này
+				this.addChild(itemToTrack);
+				
+				itemToAnimate.push(itemToTrack);
+			}
+		}
+		
+		private function cameraShake():void
 		{
 			if (hitObstacle > 0)
 			{
-				this.x = Math.random() * hitObstacle;	// va chạm gây tiếng động -> rung màn hình
+				this.x = Math.random() * hitObstacle; // va chạm gây tiếng động -> rung màn hình
 				this.y = Math.random() * hitObstacle;
 			}
 			else if (x != 0)
@@ -275,25 +352,24 @@ package screens
 			}
 		}
 		
-		private function animateObstacles():void 
+		private function animateObstacles():void
 		{
 			var obstacleToTrack:Obstacle;
 			for (var i:uint = 0; i < obstaclesToAnimate.length; i++)
 			{
 				obstacleToTrack = obstaclesToAnimate[i];
 				
-				
 				// check collision
 				if (obstacleToTrack.alreadyHit == false && obstacleToTrack.bounds.intersects(hero.bounds))
 				{
 					obstacleToTrack.alreadyHit = true;
 					obstacleToTrack.rotation = deg2rad(70);
-					hitObstacle = 30;	// độ rung màn hình
-					playerSpeed *= 0.5;	// tốc độ hero khi va chạm
+					hitObstacle = 30; // độ rung màn hình
+					playerSpeed *= 0.5; // tốc độ hero khi va chạm
 				}
 				
 				if (obstacleToTrack.distance > 0)
-					obstacleToTrack.distance -= playerSpeed * elapsed;					
+					obstacleToTrack.distance -= playerSpeed * elapsed;
 				else
 				{
 					if (obstacleToTrack.watchOut)
@@ -308,7 +384,7 @@ package screens
 					this.removeChild(obstacleToTrack);
 				}
 			}
-			
+		
 		}
 		
 		private function intObstacle():void
@@ -346,12 +422,12 @@ package screens
 			}
 			else
 			{
-				obstacle.y = int(Math.random() *  (gameArea.bottom - obstacle.height - gameArea.top)) + gameArea.top;
+				obstacle.y = int(Math.random() * (gameArea.bottom - obstacle.height - gameArea.top)) + gameArea.top;
 				obstacle.position = "middle";
 			}
 			
 			obstaclesToAnimate.push(obstacle);
-			
+		
 		}
 		
 		private function this_enterFrame(e:Event):void
