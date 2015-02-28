@@ -24,14 +24,20 @@ package screens
 	import starling.textures.Texture;
 	import starling.core.Starling;
 	
+	
+	import events.NavigationEvent; // chuyển screen;
 	/**
 	 * ...
 	 * @author VịLH
 	 */
 	public class InGame extends Sprite
 	{
+		
 		private var startButton:Button;
+		private var playAgainButton:Button;
 		private var scoreText:TextField;
+		private var pointText:TextField;
+		private var lifeText:TextField;
 		
 		private var hero:Hero;
 		private var bg:GameBackground;
@@ -46,12 +52,13 @@ package screens
 		private var hitObstacle:Number = 0;
 		private const MIN_SPEED:Number = 650; // tốc độ tổi thiểu khi bay: số càng lớn bay càng nhanh và ngược lại
 		
-		private var scoreDistance:int;
+		private var score:int;
+		private var point:int;
+		private var life:int;
 		private var obstacleGapCount:int;
 		
 		private var gameArea:Rectangle;
-		private var obstaclesToAnimate:Vector.<Obstacle>;
-		
+		private var obstaclesToAnimate:Vector.<Obstacle>;		
 		private var itemToAnimate:Vector.<Item>;
 		private var eatParticlesToAnimate:Vector.<Particle>;
 		
@@ -60,35 +67,25 @@ package screens
 		private var touchY:Number;
 		
 		private var particle:PDParticleSystem;
-		
+				
 		public function InGame()
 		{
-			super();
+			super();			
 			this.addEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
 		}
 		
 		private function onAddedToStage(e:Event):void
 		{
+			trace ("Add_TO_STAGE - InGame.as");
 			removeEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
-			drawGame();
-			
-			scoreText = new TextField(300, 100, "Score: 0", Assets.getFont().name, 24, 0xffffff);
-			this.addChild(scoreText);
-			
-			scoreText.hAlign = HAlign.LEFT;
-			scoreText.vAlign = VAlign.TOP;
-			scoreText.x = 20;
-			scoreText.y = 20;
-			scoreText.border = true;
-			scoreText.height = scoreText.textBounds.height + 10; // vẽ khung bao quanh
-			this.addChild(scoreText);
+			drawGame();				// thiết lập các đối tượng trên màn hình (hero)
+			initStartButton();		// init Start Button()
+			displayScoreGame();		// display Score Game(point, life, score)
 		}
 		
-		private function drawGame():void
-		{
-			
-			bg = new GameBackground();
-			// bg.speed = 10;
+		public function drawGame():void
+		{			
+			bg = new GameBackground();			
 			this.addChild(bg);
 
 			// custome particle
@@ -98,8 +95,7 @@ package screens
 			particle.y = -100;
 			particle.scaleX = 1.2;
 			particle.scaleY = 1.2;
-			this.addChild(particle);
-			
+			this.addChild(particle);			
 			
 			hero = new Hero();
 			hero.x = stage.stageWidth / 2;
@@ -107,17 +103,56 @@ package screens
 			
 			this.addChild(hero);
 			
-			startButton = new Button(Assets.getAtlas().getTexture("start"));
-			startButton.x = stage.stageWidth * 0.5 - startButton.width * 0.5
-			startButton.y = stage.stageHeight * 0.5 - startButton.height * 0.5;
-			this.addChild(startButton);
-			
-			gameArea = new Rectangle(0, 100, stage.stageWidth, stage.stageHeight - 250);
-		
+			gameArea = new Rectangle(0, 100, stage.stageWidth, stage.stageHeight - 250);		
 		}
 		
+		public function gameOver():void
+		{			
+			this.visible = false;	// ẩn screen hiện tại
+			
+			this.removeEventListener(Event.ENTER_FRAME, onGameTick );	// remove hero, buttonplay, buttonabout -> bỏ chớp chớp
+			this.removeEventListener(Event.ENTER_FRAME, this_enterFrame);
+			this.removeEventListener(TouchEvent.TOUCH, onTouch);
+			particle.stop();
+			this.removeChild(hero);
+			this.removeChild(pointText);
+			this.removeChild(scoreText);
+			this.removeChild(lifeText);
+			//for (var i:uint = 0; i < obstaclesToAnimate.length; i++)
+			//{
+				//obstaclesToAnimate.splice(0, i);
+				//obstaclesToAnimate = null;
+			//}
+				//
+			//for (var i:uint = 0; i < itemToAnimate.length; i++)
+			//{
+				//itemToAnimate.splice(0, i);
+				//itemToAnimate  = null;				
+			//}
+				//
+			//for (var i:uint = 0; i < eatParticlesToAnimate.length; i++)
+			//{
+				//eatParticlesToAnimate.splice(0, i);
+				//eatParticlesToAnimate = null;
+			//}
+			
+			this.dispatchEvent(new NavigationEvent(NavigationEvent.CHANGE_SCREEN, { id:"gameOver" }, true) );		
+		}
+	
+		
+		// nhấn vào button
+		// nhấn vào nút start
+		private function onStartButtonClicked(e:Event):void
+		{
+			startButton.removeEventListener(Event.TRIGGERED, onStartButtonClicked);
+			startButton.visible = false;
+			
+			lauchHero();
+		}
+			
 		public function disposeTemporaily():void
 		{
+			trace ("disposeTemporaily -  InGame.as");
 			this.visible = false;
 		}
 		
@@ -132,7 +167,7 @@ package screens
 			gameState = "idle";
 			
 			bg.speed = 0; // màn hình đứng yên khi hiện button Start, 
-			scoreDistance = 0;
+			score = 0;
 			obstacleGapCount = 0;
 			
 			playerSpeed = 0;
@@ -146,15 +181,7 @@ package screens
 			startButton.addEventListener(Event.TRIGGERED, onStartButtonClicked);
 		}
 		
-		private function onStartButtonClicked(e:Event):void
-		{
-			startButton.removeEventListener(Event.TRIGGERED, onStartButtonClicked);
-			startButton.visible = false;
-			
-			lauchHero();
-		}
-		
-		private function lauchHero():void
+		public function lauchHero():void
 		{
 			// kích hoạt particle -> phải có mới active hiệu ứng
 			particle.start();
@@ -220,15 +247,15 @@ package screens
 					{
 						hitObstacle--;
 						cameraShake();
-							// hero.rotation = deg2rad(60);
+						// hero.rotation = deg2rad(60);
 					}
 					
 					playerSpeed -= (playerSpeed - MIN_SPEED) * 0.01;
 					bg.speed = playerSpeed * elapsed;
 					
-					scoreDistance += (playerSpeed * elapsed) * 0.1;
-					scoreText.text = "Score: " + scoreDistance;
-					
+					score += (playerSpeed * elapsed) * 0.1;
+					scoreText.text = "Score: " + score;
+										
 					intObstacle();
 					animateObstacles();
 					
@@ -238,7 +265,11 @@ package screens
 					
 					break;
 				
-				case "over": 
+				case "over": 	// ra khỏi màn hình
+					break;
+					
+				case "gameOver":
+					gameOver();
 					break;
 			}
 		}
@@ -269,11 +300,11 @@ package screens
 						this.removeChild(eatParticleToTrack);
 						eatParticleToTrack = null;						
 					}
-				}
-				
+				}				
 			}
 		}
 		
+		// hero tương tác với items hay item bay ra khỏi màn hình
 		private function animateItems():void
 		{
 			var itemToTrack:Item;
@@ -288,8 +319,13 @@ package screens
 					// an item ra khoi
 					createEatParticles(itemToTrack);
 					
+					// remove item khi va cham vào hero
 					itemToAnimate.splice(i, 1);
 					this.removeChild(itemToTrack);
+					
+					// thêm 1 điểm khi va chạm với item
+					point++;
+					pointText.text = "Point: " + point;
 				}
 				
 				// item đi ra khỏi màn hình bên trái -> remove item
@@ -298,8 +334,7 @@ package screens
 					itemToAnimate.splice(i, 1);
 					this.removeChild(itemToTrack);
 				}
-			}
-		
+			}		
 		}
 		
 		private function createEatParticles(itemToTrack:Item):void
@@ -319,8 +354,7 @@ package screens
 				eatPracticle.speedY = Math.random() * 5;
 				eatPracticle.spin = Math.random() * 15;
 				
-				eatPracticle.scaleX = eatPracticle.scaleY = Math.random() * 0.3 + 0.3;
-				
+				eatPracticle.scaleX = eatPracticle.scaleY = Math.random() * 0.3 + 0.3;				
 				eatParticlesToAnimate.push(eatPracticle);
 			}
 		}
@@ -328,13 +362,43 @@ package screens
 		private function createFoodItems():void
 		{
 			if (Math.random() > 0.95)
-			{
-				var itemToTrack:Item = new Item(Math.ceil(Math.random() * 5)); // 5 loại item
-				itemToTrack.x = stage.stageWidth + 50;
-				itemToTrack.y = int(Math.random() * (gameArea.bottom - gameArea.top)) + gameArea.top; // random trong khoảng gameArea, ko thoát ra khoảng này
-				this.addChild(itemToTrack);
+			{				
+				var pattern:int = 1;
 				
-				itemToAnimate.push(itemToTrack);
+				if (Math.random() <= 0.5)
+				{				
+					// Choose a random starting position along the screen.
+										
+					var patternPosY:int = Math.floor(Math.random() * (gameArea.bottom - gameArea.top + 1)) + gameArea.top;
+						
+					// Place some items on the screen, but don't go past the screen edge
+					while (patternPosY + 15 < gameArea.bottom)
+					{						
+						var itemToTrack:Item = new Item(Math.ceil(Math.random() * 5)); // 5 loại item
+						itemToTrack.x = stage.stageWidth + 50;
+						itemToTrack.y = int(Math.random() * (gameArea.bottom - gameArea.top)) + gameArea.top; // random trong khoảng gameArea, ko thoát ra khoảng này
+						this.addChild(itemToTrack);
+						
+						// Reset position of item.
+						itemToTrack.x = stage.stageWidth + itemToTrack.width;
+						itemToTrack.y = patternPosY;
+						
+						// Mark the item for animation.
+						itemToAnimate.push(itemToTrack);
+						
+						// Increase the position of the next item by a random value.
+						patternPosY += Math.round(Math.random() * 100 + 100);
+					}
+				}
+				else
+				{
+					var itemToTrack:Item = new Item(Math.ceil(Math.random() * 5)); // 5 loại item
+					itemToTrack.x = stage.stageWidth + 50;
+					itemToTrack.y = int(Math.random() * (gameArea.bottom - gameArea.top)) + gameArea.top; // random trong khoảng gameArea, ko thoát ra khoảng này
+					this.addChild(itemToTrack);
+					
+					itemToAnimate.push(itemToTrack);
+				}
 			}
 		}
 		
@@ -359,13 +423,19 @@ package screens
 			{
 				obstacleToTrack = obstaclesToAnimate[i];
 				
+				if (life == 0)
+					gameState = "gameOver";
+			
 				// check collision
 				if (obstacleToTrack.alreadyHit == false && obstacleToTrack.bounds.intersects(hero.bounds))
 				{
 					obstacleToTrack.alreadyHit = true;
 					obstacleToTrack.rotation = deg2rad(70);
-					hitObstacle = 30; // độ rung màn hình
-					playerSpeed *= 0.5; // tốc độ hero khi va chạm
+					hitObstacle = 30; 		// độ rung màn hình
+					playerSpeed *= 0.5; 	// tốc độ hero khi va chạm
+					
+					life--;
+					lifeText.text = "Life: " + life;
 				}
 				
 				if (obstacleToTrack.distance > 0)
@@ -378,13 +448,13 @@ package screens
 					obstacleToTrack.x -= (playerSpeed + obstacleToTrack.speed) * elapsed;
 				}
 				
+				// ra khỏi màn hình
 				if (obstacleToTrack.x < -obstacleToTrack.width || gameState == "over")
 				{
 					obstaclesToAnimate.splice(i, 1);
 					this.removeChild(obstacleToTrack);
 				}
-			}
-		
+			}		
 		}
 		
 		private function intObstacle():void
@@ -416,8 +486,7 @@ package screens
 				else
 				{
 					obstacle.y = gameArea.bottom - obstacle.height;
-					obstacle.position = "bottom";
-					
+					obstacle.position = "bottom";					
 				}
 			}
 			else
@@ -430,11 +499,51 @@ package screens
 		
 		}
 		
+		// công thức di chuyển cho animations
 		private function this_enterFrame(e:Event):void
 		{
 			timePrevious = timeCurrent;
 			timeCurrent = getTimer();
 			elapsed = (timeCurrent - timePrevious) * 0.001;
+		}
+		
+		private function initStartButton():void 
+		{
+			startButton = new Button(Assets.getAtlas().getTexture("start"));
+			startButton.x = stage.stageWidth * 0.5 - startButton.width * 0.5
+			startButton.y = stage.stageHeight * 0.5 - startButton.height * 0.5;
+			this.addChild(startButton);
+		}
+		
+		public function displayScoreGame():void 
+		{
+			scoreText = new TextField(300, 100, "Score: 0", Assets.getFont().name, 22, 0xffffff);
+			this.addChild(scoreText);
+			
+			scoreText.hAlign = HAlign.LEFT;
+			scoreText.vAlign = VAlign.TOP;
+			scoreText.x = 20;
+			scoreText.y = 20;
+			// scoreText.border = true;
+			// scoreText.height = scoreText.textBounds.height + 10; // vẽ khung bao quanh
+			
+			lifeText = new TextField(300, 50, "Life: 1", Assets.getFont().name, 22, 0xffffff);
+			this.addChild(lifeText);
+			lifeText.hAlign = HAlign.LEFT;
+			lifeText.vAlign = VAlign.TOP;
+			lifeText.x = 300;
+			lifeText.y = 20;			
+			
+			pointText = new TextField(300, 50, "Point: 0", Assets.getFont().name, 22, 0xffffff);
+			this.addChild(pointText);
+			pointText.hAlign  = HAlign.LEFT;
+			pointText.vAlign = VAlign.TOP;
+			pointText.x = 500;
+			pointText.y = 20;			
+			
+			// init point, life
+			point = 0;
+			life = 1;
 		}
 	
 	}

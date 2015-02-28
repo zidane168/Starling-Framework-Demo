@@ -26,11 +26,21 @@ package objects
 		{
 			_foodItemType = value;
 			
-			itemImage = new Image(Assets.getAtlas().getTexture("item" + _foodItemType));	// item1, item2, ...
-			itemImage.x = -itemImage.texture.width * 0.5;
-			itemImage.y = -itemImage.texture.height * 0.5;
-						
-			this.addChild(itemImage);
+			
+			if (itemImage == null)	// create item in the first time
+			{
+				itemImage = new Image(Assets.getAtlas().getTexture("item" + _foodItemType));	// item1, item2, ...
+				itemImage.x = -itemImage.texture.width / 2;
+				itemImage.y = -itemImage.texture.height / 2;	// bằng * 0.5 (đặt tại tâm hình item)
+							
+				this.addChild(itemImage);
+			}
+			else	// if the item is reused
+			{
+				itemImage = new Image(Assets.getAtlas().getTexture("item" + _foodItemType));	// item1, item2, ...
+				itemImage.x = -itemImage.texture.width / 2;
+				itemImage.y = -itemImage.texture.height / 2 ;
+			}
 		}
 		
 	}

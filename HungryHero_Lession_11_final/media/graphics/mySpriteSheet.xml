@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with TexturePacker http://www.codeandweb.com/texturepacker-->
-<!-- $TexturePacker:SmartUpdate:b43bebc78632635bf827e6148631ff7c:66d1145c4d24b9c9157815251ff62878:a61cba8975c307742327789f7fed8c88$ -->
-<TextureAtlas imagePath="mySpriteSheet.png">
+<!-- $TexturePacker:SmartUpdate:f3b4adc9b0d35ea13efe91d93cd42fc9:e75a63525e53c36ec367f1c4e60e4048:251254e3bfe0f4e512603e3f7f040319$ -->
+<TextureAtlas imagePath="b.png">
     <SubTexture name="about" x="2" y="2" width="84" height="51" frameX="-53" frameY="-25" frameWidth="189" frameHeight="102"/>
     <SubTexture name="aboutNew" x="88" y="2" width="168" height="81" frameX="-11" frameY="-10" frameWidth="189" frameHeight="102"/>
     <SubTexture name="bgLayer2" x="2" y="85" width="1024" height="266"/>
@@ -35,7 +35,8 @@
     <SubTexture name="item5" x="522" y="941" width="25" height="23" frameX="-4" frameY="-5" frameWidth="32" frameHeight="32"/>
     <SubTexture name="item6" x="549" y="941" width="57" height="55" frameX="-3" frameY="-4" frameWidth="64" frameHeight="64"/>
     <SubTexture name="item7" x="608" y="941" width="56" height="55" frameX="-4" frameY="-4" frameWidth="64" frameHeight="64"/>
-    <SubTexture name="logo" x="666" y="941" width="300" height="204" frameX="-55" frameY="-93" frameWidth="410" frameHeight="390"/>
+    <SubTexture name="particleEat" x="666" y="941" width="14" height="16"/>
+    <SubTexture name="logo" x="682" y="941" width="300" height="204" frameX="-55" frameY="-93" frameWidth="410" frameHeight="390"/>
     <SubTexture name="main" x="2" y="1333" width="165" height="85" frameX="-12" frameY="-8" frameWidth="189" frameHeight="102"/>
     <SubTexture name="obstacle1" x="169" y="1333" width="142" height="53" frameX="-16" frameY="-26" frameWidth="177" frameHeight="100"/>
     <SubTexture name="obstacle1_crash" x="313" y="1333" width="98" height="58" frameX="-37" frameY="-21" frameWidth="177" frameHeight="100"/>
