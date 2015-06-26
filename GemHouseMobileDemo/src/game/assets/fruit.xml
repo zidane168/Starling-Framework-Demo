@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker http://www.codeandweb.com/texturepacker-->
+<!-- $TexturePacker:SmartUpdate:fd898caafd3b83bd447d65af21aec392:1/1$ -->
+<TextureAtlas imagePath="fruit.png">
+    <SubTexture name="Bomb" x="2" y="2" width="152" height="152" frameX="-4" frameY="-4" frameWidth="160" frameHeight="160"/>
+    <SubTexture name="Light" x="156" y="2" width="93" height="93"/>
+    <SubTexture name="fruit160_1" x="2" y="156" width="88" height="104" frameX="-36" frameY="-27" frameWidth="160" frameHeight="160"/>
+    <SubTexture name="fruit160_2" x="92" y="156" width="96" height="72" frameX="-31" frameY="-43" frameWidth="160" frameHeight="160"/>
+    <SubTexture name="fruit160_3" x="2" y="262" width="102" height="140" frameX="-34" frameY="-17" frameWidth="160" frameHeight="160"/>
+    <SubTexture name="fruit160_4" x="106" y="262" width="92" height="92" frameX="-35" frameY="-34" frameWidth="160" frameHeight="160"/>
+    <SubTexture name="fruit160_5" x="2" y="404" width="88" height="90" frameX="-36" frameY="-34" frameWidth="160" frameHeight="160"/>
+    <SubTexture name="fruit160_6" x="92" y="404" width="102" height="102" frameX="-28" frameY="-29" frameWidth="160" frameHeight="160"/>
+</TextureAtlas>
